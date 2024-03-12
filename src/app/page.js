@@ -1,8 +1,64 @@
+"use client";
 import Image from "next/image";
 
 export default function Home() {
+  const getNotificationPermission = async () => {
+    Notification.requestPermission().then((result) => {
+      if (result === "granted") {
+        console.log("first permission granted");
+        registerServiceWorker();
+        // sendNotification();
+      }
+    });
+  };
+
+  const registerServiceWorker = async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey:
+            "BLH_9dS1RAYnHmt1709qC0UmHN8AaAY44E5FBOFALxM-9uT-6qvO2uNJzZszziexOpQq-bubij4MWoFskX5Jlbo",
+        });
+      }
+      console.log("subscription", subscription);
+      sendNotification(JSON.stringify(subscription));
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  const sendNotification = async (subscription) => {
+    await fetch("/api/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscription),
+    });
+  };
+
+  return (
+    <main>
+      <button
+        onClick={() => getNotificationPermission()}
+        className="mb-8 px-8 py-4 text-white bg-blue-500 rounded-lg shadow-lg"
+      >
+        Autoriser les notifications
+      </button>
+    </main>
+  );
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <button
+        onClick={sendNotification}
+        className="mb-8 px-8 py-4 text-white bg-blue-500 rounded-lg shadow-lg"
+      >
+        Show Notification
+      </button>
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Get started by editing&nbsp;
