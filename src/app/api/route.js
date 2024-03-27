@@ -27,22 +27,13 @@ export async function POST(req) {
   console.log("vapidKeys", vapidKeys);
   console.log("pushSubscription", JSON.parse(pushSubscription));
 
-  webpush
-    .sendNotification(
-      JSON.parse(pushSubscription),
-      JSON.stringify({
-        title: "Hello Web Push",
-        message: "Your web push notification is here!",
-      })
-    )
-    .then((result) => {
-      console.log("result", result);
+  const result = await webpush.sendNotification(
+    JSON.parse(pushSubscription),
+    JSON.stringify({
+      title: "Hello Web Push",
+      message: "Your web push notification is here!",
     })
-    .catch((error) => {
-      console.log("error", error);
-    });
+  );
 
-  return NextResponse.json({
-    hello: "World",
-  });
+  return NextResponse.json(result);
 }
